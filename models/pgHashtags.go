@@ -7,6 +7,7 @@ import (
 )
 
 type PgHashtag struct {
+	tableName struct{}  `pg:"hashtags"`
 	ID        int64     `pg:"id,pk"`
 	Name      string    `pg:"name"`
 	CreatedAt time.Time `pg:"created_at"`

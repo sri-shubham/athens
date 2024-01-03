@@ -7,6 +7,7 @@ import (
 )
 
 type PgProject struct {
+	tableName   struct{}  `pg:"projects"`
 	ID          int64     `pg:"id,pk"`
 	Name        string    `pg:"name"`
 	Slug        string    `pg:"slug"`

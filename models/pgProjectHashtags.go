@@ -3,9 +3,10 @@ package models
 import "github.com/go-pg/pg/v10"
 
 type PgProjectHashtag struct {
-	ID        int64 `pg:"id,pk"`
-	HashtagID int64 `pg:"hashtag_id"`
-	ProjectID int64 `pg:"project_id"`
+	tableName struct{} `pg:"project_hashtags"`
+	ID        int64    `pg:"id,pk"`
+	HashtagID int64    `pg:"hashtag_id"`
+	ProjectID int64    `pg:"project_id"`
 }
 
 func (p *PgProjectHashtag) GetID() int64 {

@@ -27,8 +27,9 @@ func NewPgUserHelper(db *pg.DB) Users {
 }
 
 type PgUser struct {
-	ID        int64  `pg:",pk"`
-	Name      string `pg:",notnull"`
+	tableName struct{} `pg:"users"`
+	ID        int64    `pg:",pk"`
+	Name      string   `pg:",notnull"`
 	CreatedAt *time.Time
 }
 

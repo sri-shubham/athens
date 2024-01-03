@@ -21,9 +21,10 @@ func NewPgUserProjectHelper(db *pg.DB) UserProjects {
 var _ = UserProjects(&PgUserProjectHelper{})
 
 type PGUserProject struct {
-	ID        int64 `pg:"id,pk"`
-	ProjectID int64 `pg:"project_id"`
-	UserID    int64 `pg:"user_id"`
+	tableName struct{} `pg:"user_projects"`
+	ID        int64    `pg:"id,pk"`
+	ProjectID int64    `pg:"project_id"`
+	UserID    int64    `pg:"user_id"`
 }
 
 func (p *PGUserProject) GetID() int64 {

@@ -1,13 +1,13 @@
 CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR,
-    created_at TIMESTAMP
+    created_at TIMESTAMP DEFAULT Now()
 );
 
 CREATE TABLE IF NOT EXISTS hashtags (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR,
-    created_at TIMESTAMP
+    created_at TIMESTAMP DEFAULT Now()
 );
 
 CREATE TABLE IF NOT EXISTS projects (
@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS projects (
     name VARCHAR,
     slug VARCHAR,
     description TEXT,
-    created_at TIMESTAMP
+    created_at TIMESTAMP DEFAULT Now()
 );
 
 CREATE TABLE IF NOT EXISTS project_hashtags (
