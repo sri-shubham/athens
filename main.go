@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"log"
 
 	"github.com/sri-shubham/athens/models"
+	"github.com/sri-shubham/athens/search"
 	"github.com/sri-shubham/athens/util"
 	"go.uber.org/zap"
 )
@@ -39,14 +42,61 @@ func main() {
 
 	// Init DB Models
 	users := models.NewPgUserHelper(util.GetDb())
-	_ = users
 	userProjects := models.NewPgUserProjectHelper(util.GetDb())
-	_ = userProjects
-	projects := models.NewPgUserProjectHelper(util.GetDb())
-	_ = projects
+	projects := models.NewPgProjectHelper(util.GetDb())
 	projectHashtags := models.NewPgProjectHashtagHelper(util.GetDb())
-	_ = projectHashtags
 	hashtags := models.NewPgHashtagHelper(util.GetDb())
-	_ = hashtags
 
+	// Init Search Index
+	syncHelper := search.NewSyncHelper(util.GetElasticClient(),
+		users,
+		projects,
+		projectHashtags,
+		hashtags,
+		userProjects)
+
+	user, err := users.Create(&models.User{
+		Name: "Shubham",
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	ht, err := hashtags.Create(&models.Hashtag{
+		Name: "Go",
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	project, err := projects.Create(&models.Project{
+		Name:        "Project 1",
+		Slug:        "T12345",
+		Description: "Test description",
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	projectHashtag, err := projectHashtags.Create(&models.ProjectHashtag{
+		HashtagID: ht,
+		ProjectID: project,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	userProject, err := userProjects.Create(&models.UserProject{
+		ProjectID: project,
+		UserID:    user,
+	})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(user, project, ht, projectHashtag, userProject)
+
+	err = syncHelper.SyncAll(context.Background())
+	if err != nil {
+		panic(err)
+	}
 }

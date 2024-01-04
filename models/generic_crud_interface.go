@@ -8,6 +8,7 @@ type CRUD[T any] interface {
 	Create(T) (int64, error)
 	Update(T) (int64, error)
 	Delete(id int64) error
+	GetAll() ([]T, error)
 }
 
 type IdGetter interface {
@@ -57,4 +58,20 @@ func (uh *CRUDHelper[DbType, ModelType]) Update(in ModelType) (int64, error) {
 		return 0, err
 	}
 	return dbItem.GetID(), nil
+}
+
+func (uh *CRUDHelper[DbType, ModelType]) GetAll() ([]ModelType, error) {
+	var dbItem []DbType
+	var out []ModelType
+	err := uh.db.Model(&dbItem).Select()
+	if err != nil {
+		return out, err
+	}
+
+	out = make([]ModelType, 0, len(dbItem))
+	for _, item := range dbItem {
+		out = append(out, uh.MapModelFromDB(item))
+	}
+
+	return out, nil
 }
