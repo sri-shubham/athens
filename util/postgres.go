@@ -6,9 +6,9 @@ import (
 	"io"
 	"log"
 	"os"
+	"time"
 
 	"github.com/go-pg/pg/v10"
-	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
 
@@ -32,7 +32,8 @@ func (c *CustomQueryLogger) AfterQuery(ctx context.Context, q *pg.QueryEvent) er
 	return nil
 }
 
-func ConnectToPostgres(config *Config) error {
+func ConnectToPostgres(config *Config) (err error) {
+	time.Sleep(10 * time.Second)
 	db = pg.Connect(&pg.Options{
 		Addr:     fmt.Sprintf("%s:%d", config.Postgres.Host, config.Postgres.Port),
 		User:     config.Postgres.User,
@@ -44,9 +45,9 @@ func ConnectToPostgres(config *Config) error {
 		db.AddQueryHook(&CustomQueryLogger{})
 	}
 
-	_, err := db.Exec("SELECT 1")
+	_, err = db.Exec("SELECT 1")
 	if err != nil {
-		return errors.Wrap(err, "Error connecting to PostgreSQL")
+		return err
 	}
 
 	return nil

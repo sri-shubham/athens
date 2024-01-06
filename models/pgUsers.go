@@ -19,7 +19,7 @@ type PgUserHelper struct {
 
 // GetNewEmptyStruct implements Users.
 func (*PgUserHelper) GetNewEmptyStruct() *User {
-	panic("unimplemented")
+	return &User{}
 }
 
 func NewPgUserHelper(db *pg.DB, updateQueue util.UpdateQueue) Users {

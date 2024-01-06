@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	elastic "github.com/olivere/elastic/v7"
+	"go.uber.org/zap"
 )
 
 // ProjectDocument represents the Elasticsearch document structure for projects
@@ -106,17 +107,37 @@ func createIndex(ctx context.Context, client *elastic.Client) error {
 	return nil
 }
 
-// SyncData : Add documents to index, optionally can clear index and add documents
-func SyncData(ctx context.Context, client *elastic.Client, projects []ProjectDocument, clearData bool) error {
+func InitIndex(ctx context.Context, client *elastic.Client) error {
 	// Check if the index already exists
 	exists, err := client.IndexExists(indexName).Do(ctx)
 	if err != nil {
+		zap.L().Error("Elastic search index check failed", zap.Error(err))
 		return err
 	}
 
 	if !exists {
 		err = createIndex(ctx, client)
 		if err != nil {
+			zap.L().Error("Elastic search index create failed", zap.Error(err))
+			return err
+		}
+	}
+	return nil
+}
+
+// SyncData : Add documents to index, optionally can clear index and add documents
+func SyncData(ctx context.Context, client *elastic.Client, projects []ProjectDocument, clearData bool) error {
+	// Check if the index already exists
+	exists, err := client.IndexExists(indexName).Do(ctx)
+	if err != nil {
+		zap.L().Error("Elastic search index check failed", zap.Error(err))
+		return err
+	}
+
+	if !exists {
+		err = createIndex(ctx, client)
+		if err != nil {
+			zap.L().Error("Elastic search index create failed", zap.Error(err))
 			return err
 		}
 	} else if clearData {

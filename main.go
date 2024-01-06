@@ -62,6 +62,12 @@ func main() {
 	searchService := api.NewSearchService(searchModel)
 
 	// Init Search Index
+	err = search.InitIndex(context.Background(), util.GetElasticClient())
+	if err != nil {
+		zap.L().Info("Failed to init search index", zap.Error(err))
+		panic(err)
+	}
+
 	syncHelper := search.NewSyncHelper(util.GetElasticClient(),
 		users,
 		projects,
@@ -76,6 +82,7 @@ func main() {
 
 	err = syncHelper.SyncAll(context.Background())
 	if err != nil {
+		zap.L().Info("Failed to init sync", zap.Error(err))
 		panic(err)
 	}
 
@@ -87,6 +94,7 @@ func main() {
 		userProjects,
 		searchService)
 
+	zap.L().Info("Starting services")
 	wg, wgCtx := errgroup.WithContext(context.Background())
 
 	// Create a new HTTP server
@@ -96,6 +104,8 @@ func main() {
 	}
 
 	wg.Go(func() error {
+		zap.L().Info("Starting Rest services")
+
 		return server.ListenAndServe()
 	})
 
@@ -116,6 +126,7 @@ func main() {
 	})
 
 	wg.Go(func() error {
+		zap.L().Info("Starting Background sync")
 		return syncHelper.BackgroundSync(wgCtx)
 	})
 
