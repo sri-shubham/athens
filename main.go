@@ -4,12 +4,14 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/sri-shubham/athens/api"
 	"github.com/sri-shubham/athens/models"
 	"github.com/sri-shubham/athens/search"
 	"github.com/sri-shubham/athens/util"
 	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
 )
 
 func main() {
@@ -41,12 +43,19 @@ func main() {
 		zap.L().Panic("Failed to connect to elastic search", zap.Error(err))
 	}
 
+	// Init Queues
+	userUpdates := util.NewQueue()
+	projectUpdates := util.NewQueue()
+	userProjectUpdates := util.NewQueue()
+	hashtagUpdates := util.NewQueue()
+	projectHashtagUpdates := util.NewQueue()
+
 	// Init DB Models
-	users := models.NewPgUserHelper(util.GetDb())
-	userProjects := models.NewPgUserProjectHelper(util.GetDb())
-	projects := models.NewPgProjectHelper(util.GetDb())
-	projectHashtags := models.NewPgProjectHashtagHelper(util.GetDb())
-	hashtags := models.NewPgHashtagHelper(util.GetDb())
+	users := models.NewPgUserHelper(util.GetDb(), userUpdates)
+	userProjects := models.NewPgUserProjectHelper(util.GetDb(), userProjectUpdates)
+	projects := models.NewPgProjectHelper(util.GetDb(), projectUpdates)
+	projectHashtags := models.NewPgProjectHashtagHelper(util.GetDb(), projectHashtagUpdates)
+	hashtags := models.NewPgHashtagHelper(util.GetDb(), hashtagUpdates)
 
 	// Init search indexes
 	searchModel := search.NewProjectSearcher(util.GetElasticClient())
@@ -58,7 +67,12 @@ func main() {
 		projects,
 		projectHashtags,
 		hashtags,
-		userProjects)
+		userProjects,
+		userUpdates,
+		projectUpdates,
+		projectHashtagUpdates,
+		hashtagUpdates,
+		userProjectUpdates)
 
 	err = syncHelper.SyncAll(context.Background())
 	if err != nil {
@@ -73,5 +87,37 @@ func main() {
 		userProjects,
 		searchService)
 
-	log.Fatal(http.ListenAndServe(":8080", router))
+	wg, wgCtx := errgroup.WithContext(context.Background())
+
+	// Create a new HTTP server
+	server := &http.Server{
+		Addr:    ":8080",
+		Handler: router,
+	}
+
+	wg.Go(func() error {
+		return server.ListenAndServe()
+	})
+
+	wg.Go(func() error {
+		<-wgCtx.Done()
+
+		// Create a context with a timeout for server shutdown
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		// Attempt to gracefully shutdown the server
+		if err := server.Shutdown(shutdownCtx); err != nil {
+			zap.L().Error("Failed to shutdown server", zap.Error(err))
+			panic(err)
+		}
+
+		return nil
+	})
+
+	wg.Go(func() error {
+		return syncHelper.BackgroundSync(wgCtx)
+	})
+
+	log.Fatal(wg.Wait())
 }

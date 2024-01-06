@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/go-pg/pg/v10"
+	"github.com/sri-shubham/athens/util"
 )
 
 // Checks interface is implemented
@@ -21,11 +22,12 @@ func (*PgUserHelper) GetNewEmptyStruct() *User {
 	panic("unimplemented")
 }
 
-func NewPgUserHelper(db *pg.DB) Users {
+func NewPgUserHelper(db *pg.DB, updateQueue util.UpdateQueue) Users {
 	return &PgUserHelper{
 		db: db,
 		CRUDHelper: &CRUDHelper[*PgUser, *User]{
 			db:             db,
+			updateQueue:    updateQueue,
 			MapModelToDB:   mapPgUser,
 			MapModelFromDB: mapUser,
 			GetEmptyStruct: func() *PgUser { return &PgUser{} },

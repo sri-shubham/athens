@@ -1,7 +1,10 @@
 package models
 
 import (
+	"context"
+
 	"github.com/go-pg/pg/v10"
+	"github.com/sri-shubham/athens/util"
 )
 
 type PgUserProjectHelper struct {
@@ -14,11 +17,12 @@ func (*PgUserProjectHelper) GetNewEmptyStruct() *UserProject {
 	return &UserProject{}
 }
 
-func NewPgUserProjectHelper(db *pg.DB) UserProjects {
+func NewPgUserProjectHelper(db *pg.DB, updateQueue util.UpdateQueue) UserProjects {
 	return &PgUserProjectHelper{
 		db: db,
 		CRUDHelper: &CRUDHelper[*PGUserProject, *UserProject]{
 			db:             db,
+			updateQueue:    updateQueue,
 			MapModelToDB:   mapPgUserProject,
 			MapModelFromDB: mapUserProject,
 			GetEmptyStruct: func() *PGUserProject { return &PGUserProject{} },
@@ -56,4 +60,21 @@ func mapPgUserProject(in *UserProject) *PGUserProject {
 		ProjectID: in.ProjectID,
 		UserID:    in.UserID,
 	}
+}
+
+// GetByProjectID implements ProjectHashtags.
+func (h *PgUserProjectHelper) GetByProjectID(ctx context.Context, id int64) ([]*UserProject, error) {
+	var dbItem []*PGUserProject
+	var out []*UserProject
+	err := h.db.Model(&dbItem).Context(ctx).Where("project_id=?", id).Select()
+	if err != nil {
+		return out, err
+	}
+
+	out = make([]*UserProject, 0, len(dbItem))
+	for _, item := range dbItem {
+		out = append(out, h.MapModelFromDB(item))
+	}
+
+	return out, nil
 }

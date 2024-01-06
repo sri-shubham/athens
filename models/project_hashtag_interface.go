@@ -1,5 +1,7 @@
 package models
 
+import "context"
+
 type ProjectHashtag struct {
 	ID        int64 `json:"id"`
 	HashtagID int64 `json:"hashtag_id"`
@@ -15,4 +17,6 @@ func (u *ProjectHashtag) GetID() int64 {
 
 type ProjectHashtags interface {
 	CRUD[*ProjectHashtag]
+	GetByHashTag(ctx context.Context, id int64) ([]*ProjectHashtag, error)
+	GetByProjectID(ctx context.Context, id int64) ([]*ProjectHashtag, error)
 }
