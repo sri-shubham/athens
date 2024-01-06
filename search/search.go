@@ -3,8 +3,6 @@ package search
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"log"
 
 	elastic "github.com/olivere/elastic/v7"
 )
@@ -47,18 +45,6 @@ func (h *ProjectSearchHelper) ByUser(ctx context.Context, searchTerm string) ([]
 	query := elastic.NewNestedQuery("users",
 		elastic.NewMatchQuery("users.name", searchTerm),
 	)
-	// Print the query in a human-readable format
-	source, err := query.Source()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	prettyQuery, err := json.Marshal(source)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println(string(prettyQuery))
 
 	searchResult, err := h.elastic.Search().
 		Index(indexName).
