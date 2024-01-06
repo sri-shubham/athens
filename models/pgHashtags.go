@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"time"
 
 	"github.com/go-pg/pg/v10"
@@ -13,6 +14,14 @@ type PgHashtag struct {
 	CreatedAt time.Time `pg:"created_at"`
 }
 
+// BeforeInsert hook is called before inserting a new record.
+func (u *PgHashtag) BeforeInsert(ctx context.Context) (context.Context, error) {
+	// Perform operations before insert
+	u.CreatedAt = time.Now()
+
+	return ctx, nil
+}
+
 // Checks interface is implemented
 var _ = Users(&PgUserHelper{})
 
@@ -22,6 +31,11 @@ type PgHashtagHelper struct {
 	*CRUDHelper[*PgHashtag, *Hashtag]
 }
 
+// GetNewEmptyStruct implements Hashtags.
+func (*PgHashtagHelper) GetNewEmptyStruct() *Hashtag {
+	return &Hashtag{}
+}
+
 func NewPgHashtagHelper(db *pg.DB) Hashtags {
 	return &PgHashtagHelper{
 		db: db,
@@ -29,6 +43,7 @@ func NewPgHashtagHelper(db *pg.DB) Hashtags {
 			db:             db,
 			MapModelToDB:   mapPgHashtag,
 			MapModelFromDB: mapHashtag,
+			GetEmptyStruct: func() *PgHashtag { return &PgHashtag{} },
 		},
 	}
 }

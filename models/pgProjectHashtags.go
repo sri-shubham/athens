@@ -25,6 +25,11 @@ type PgProjectHashtagHelper struct {
 	*CRUDHelper[*PgProjectHashtag, *ProjectHashtag]
 }
 
+// GetNewEmptyStruct implements ProjectHashtags.
+func (*PgProjectHashtagHelper) GetNewEmptyStruct() *ProjectHashtag {
+	return &ProjectHashtag{}
+}
+
 func NewPgProjectHashtagHelper(db *pg.DB) ProjectHashtags {
 	return &PgProjectHashtagHelper{
 		db: db,
@@ -32,6 +37,7 @@ func NewPgProjectHashtagHelper(db *pg.DB) ProjectHashtags {
 			db:             db,
 			MapModelToDB:   mapPgProjectHashtag,
 			MapModelFromDB: mapProjectHashtag,
+			GetEmptyStruct: func() *PgProjectHashtag { return &PgProjectHashtag{} },
 		},
 	}
 }

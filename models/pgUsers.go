@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"time"
 
 	"github.com/go-pg/pg/v10"
@@ -15,6 +16,11 @@ type PgUserHelper struct {
 	*CRUDHelper[*PgUser, *User]
 }
 
+// GetNewEmptyStruct implements Users.
+func (*PgUserHelper) GetNewEmptyStruct() *User {
+	panic("unimplemented")
+}
+
 func NewPgUserHelper(db *pg.DB) Users {
 	return &PgUserHelper{
 		db: db,
@@ -22,6 +28,7 @@ func NewPgUserHelper(db *pg.DB) Users {
 			db:             db,
 			MapModelToDB:   mapPgUser,
 			MapModelFromDB: mapUser,
+			GetEmptyStruct: func() *PgUser { return &PgUser{} },
 		},
 	}
 }
@@ -30,7 +37,15 @@ type PgUser struct {
 	tableName struct{} `pg:"users"`
 	ID        int64    `pg:",pk"`
 	Name      string   `pg:",notnull"`
-	CreatedAt *time.Time
+	CreatedAt time.Time
+}
+
+// BeforeInsert hook is called before inserting a new record.
+func (u *PgUser) BeforeInsert(ctx context.Context) (context.Context, error) {
+	// Perform operations before insert
+	u.CreatedAt = time.Now()
+
+	return ctx, nil
 }
 
 func (p *PgUser) GetID() int64 {

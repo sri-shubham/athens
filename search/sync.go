@@ -3,7 +3,7 @@ package search
 import (
 	"context"
 
-	"github.com/olivere/elastic"
+	elastic "github.com/olivere/elastic/v7"
 	"github.com/sri-shubham/athens/models"
 	"golang.org/x/sync/errgroup"
 )

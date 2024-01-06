@@ -1,10 +1,17 @@
 package models
 
-import "github.com/go-pg/pg/v10"
+import (
+	"github.com/go-pg/pg/v10"
+)
 
 type PgUserProjectHelper struct {
 	*CRUDHelper[*PGUserProject, *UserProject]
 	db *pg.DB
+}
+
+// GetNewEmptyStruct implements UserProjects.
+func (*PgUserProjectHelper) GetNewEmptyStruct() *UserProject {
+	return &UserProject{}
 }
 
 func NewPgUserProjectHelper(db *pg.DB) UserProjects {
@@ -14,6 +21,7 @@ func NewPgUserProjectHelper(db *pg.DB) UserProjects {
 			db:             db,
 			MapModelToDB:   mapPgUserProject,
 			MapModelFromDB: mapUserProject,
+			GetEmptyStruct: func() *PGUserProject { return &PGUserProject{} },
 		},
 	}
 }

@@ -13,11 +13,12 @@ type Config struct {
 }
 
 type Postgres struct {
-	Host     string `yaml:"host"`
-	Port     int    `yaml:"port"`
-	User     string `yaml:"user"`
-	Password string `yaml:"password"`
-	DBName   string `yaml:"dbname"`
+	Host       string `yaml:"host"`
+	Port       int    `yaml:"port"`
+	User       string `yaml:"user"`
+	Password   string `yaml:"password"`
+	DBName     string `yaml:"dbname"`
+	LogQueries bool   `yaml:"log_queries"`
 }
 
 type Elasticsearch struct {

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"time"
 
 	"github.com/go-pg/pg/v10"
@@ -13,6 +14,14 @@ type PgProject struct {
 	Slug        string    `pg:"slug"`
 	Description string    `pg:"description"`
 	CreatedAt   time.Time `pg:"created_at"`
+}
+
+// BeforeInsert hook is called before inserting a new record.
+func (u *PgProject) BeforeInsert(ctx context.Context) (context.Context, error) {
+	// Perform operations before insert
+	u.CreatedAt = time.Now()
+
+	return ctx, nil
 }
 
 func (p *PgProject) GetID() int64 {
@@ -31,6 +40,11 @@ type PgProjectHelper struct {
 	*CRUDHelper[*PgProject, *Project]
 }
 
+// GetNewEmptyStruct implements Projects.
+func (*PgProjectHelper) GetNewEmptyStruct() *Project {
+	return &Project{}
+}
+
 func NewPgProjectHelper(db *pg.DB) Projects {
 	return &PgProjectHelper{
 		db: db,
@@ -38,6 +52,7 @@ func NewPgProjectHelper(db *pg.DB) Projects {
 			db:             db,
 			MapModelToDB:   mapPgProject,
 			MapModelFromDB: mapProject,
+			GetEmptyStruct: func() *PgProject { return &PgProject{} },
 		},
 	}
 }

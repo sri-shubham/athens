@@ -2,9 +2,10 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
+	"net/http"
 
+	"github.com/sri-shubham/athens/api"
 	"github.com/sri-shubham/athens/models"
 	"github.com/sri-shubham/athens/search"
 	"github.com/sri-shubham/athens/util"
@@ -47,6 +48,10 @@ func main() {
 	projectHashtags := models.NewPgProjectHashtagHelper(util.GetDb())
 	hashtags := models.NewPgHashtagHelper(util.GetDb())
 
+	// Init search indexes
+	searchModel := search.NewProjectSearcher(util.GetElasticClient())
+	searchService := api.NewSearchService(searchModel)
+
 	// Init Search Index
 	syncHelper := search.NewSyncHelper(util.GetElasticClient(),
 		users,
@@ -55,48 +60,18 @@ func main() {
 		hashtags,
 		userProjects)
 
-	user, err := users.Create(&models.User{
-		Name: "Shubham",
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	ht, err := hashtags.Create(&models.Hashtag{
-		Name: "Go",
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	project, err := projects.Create(&models.Project{
-		Name:        "Project 1",
-		Slug:        "T12345",
-		Description: "Test description",
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	projectHashtag, err := projectHashtags.Create(&models.ProjectHashtag{
-		HashtagID: ht,
-		ProjectID: project,
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	userProject, err := userProjects.Create(&models.UserProject{
-		ProjectID: project,
-		UserID:    user,
-	})
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(user, project, ht, projectHashtag, userProject)
-
 	err = syncHelper.SyncAll(context.Background())
 	if err != nil {
 		panic(err)
 	}
+
+	// Setup Routes
+	router := api.SetupRoutes(users,
+		projects,
+		projectHashtags,
+		hashtags,
+		userProjects,
+		searchService)
+
+	log.Fatal(http.ListenAndServe(":8080", router))
 }
