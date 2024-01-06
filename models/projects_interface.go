@@ -10,6 +10,13 @@ type Project struct {
 	CreatedAt   time.Time `json:"created_at"`
 }
 
+func (p *Project) GetID() int64 {
+	if p == nil {
+		return 0
+	}
+	return p.ID
+}
+
 type Projects interface {
 	CRUD[*Project]
 }

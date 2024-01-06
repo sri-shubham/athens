@@ -8,6 +8,13 @@ type Hashtag struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+func (h *Hashtag) GetID() int64 {
+	if h == nil {
+		return 0
+	}
+	return h.ID
+}
+
 type Hashtags interface {
 	CRUD[*Hashtag]
 }

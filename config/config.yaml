@@ -4,6 +4,7 @@ postgres:
   user: user
   password: password
   dbname: projects
+  log_queries: false
 
 elasticsearch:
   url: http://localhost:9200

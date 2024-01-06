@@ -6,6 +6,13 @@ type ProjectHashtag struct {
 	ProjectID int64 `json:"project_id"`
 }
 
+func (u *ProjectHashtag) GetID() int64 {
+	if u == nil {
+		return 0
+	}
+	return u.ID
+}
+
 type ProjectHashtags interface {
 	CRUD[*ProjectHashtag]
 }

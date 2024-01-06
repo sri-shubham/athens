@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/olivere/elastic"
+	elastic "github.com/olivere/elastic/v7"
 )
 
 // ProjectDocument represents the Elasticsearch document structure for projects
@@ -67,7 +67,8 @@ func createIndex(ctx context.Context, client *elastic.Client) error {
 								"type": "integer"
 							},
 							"name": {
-								"type": "keyword"
+								"type": "text",
+								"analyzer": "custom_analyzer"
 							},
 							"created_at": {
 								"type": "date"
@@ -81,7 +82,8 @@ func createIndex(ctx context.Context, client *elastic.Client) error {
 								"type": "integer"
 							},
 							"name": {
-								"type": "keyword"
+								"type": "text",
+								"analyzer": "custom_analyzer"
 							},
 							"created_at": {
 								"type": "date"

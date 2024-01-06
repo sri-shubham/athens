@@ -1,8 +1,10 @@
 package util
 
 import (
+	"context"
 	"fmt"
 	"io"
+	"log"
 	"os"
 
 	"github.com/go-pg/pg/v10"
@@ -12,6 +14,24 @@ import (
 
 var db *pg.DB
 
+// CustomQueryLogger implements the pg.QueryHook interface
+type CustomQueryLogger struct{}
+
+func (c *CustomQueryLogger) BeforeQuery(ctx context.Context, q *pg.QueryEvent) (context.Context, error) {
+	// Log the query before execution
+	query, _ := q.FormattedQuery()
+	log.Printf("Executing query: %s", query)
+	return ctx, nil
+}
+
+func (c *CustomQueryLogger) AfterQuery(ctx context.Context, q *pg.QueryEvent) error {
+	// Log any errors or other relevant information after query execution
+	if q.Err != nil {
+		log.Printf("Query error: %s", q.Err)
+	}
+	return nil
+}
+
 func ConnectToPostgres(config *Config) error {
 	db = pg.Connect(&pg.Options{
 		Addr:     fmt.Sprintf("%s:%d", config.Postgres.Host, config.Postgres.Port),
@@ -19,6 +39,10 @@ func ConnectToPostgres(config *Config) error {
 		Password: config.Postgres.Password,
 		Database: config.Postgres.DBName,
 	})
+
+	if config.Postgres.LogQueries {
+		db.AddQueryHook(&CustomQueryLogger{})
+	}
 
 	_, err := db.Exec("SELECT 1")
 	if err != nil {

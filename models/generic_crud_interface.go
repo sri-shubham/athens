@@ -4,6 +4,7 @@ import "github.com/go-pg/pg/v10"
 
 // Generic CRUD operations interface
 type CRUD[T any] interface {
+	GetNewEmptyStruct() T
 	Get(id int64) (T, error)
 	Create(T) (int64, error)
 	Update(T) (int64, error)
@@ -21,11 +22,12 @@ type CRUDHelper[DbType IdGetter, ModelType any] struct {
 	db             *pg.DB
 	MapModelToDB   func(ModelType) DbType
 	MapModelFromDB func(DbType) ModelType
+	GetEmptyStruct func() DbType
 }
 
 func (uh *CRUDHelper[DbType, ModelType]) Get(id int64) (ModelType, error) {
-	var dbItem DbType
-	err := uh.db.Model(dbItem).WherePK().Select()
+	dbItem := uh.GetEmptyStruct()
+	err := uh.db.Model(dbItem).Where("id=?", id).Select()
 	if err != nil {
 		var v ModelType
 		return v, err
@@ -43,8 +45,8 @@ func (uh *CRUDHelper[DbType, ModelType]) Create(u ModelType) (int64, error) {
 }
 
 func (uh *CRUDHelper[DbType, ModelType]) Delete(id int64) error {
-	var pgModel DbType
-	_, err := uh.db.Model(pgModel).WherePK().Delete()
+	dbItem := uh.GetEmptyStruct()
+	_, err := uh.db.Model(dbItem).Where("id=?", id).Delete()
 	if err != nil {
 		return err
 	}
