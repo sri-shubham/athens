@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/go-pg/pg/v10"
+	"github.com/sri-shubham/athens/util"
 )
 
 type PgProject struct {
@@ -45,11 +46,12 @@ func (*PgProjectHelper) GetNewEmptyStruct() *Project {
 	return &Project{}
 }
 
-func NewPgProjectHelper(db *pg.DB) Projects {
+func NewPgProjectHelper(db *pg.DB, updateQueue util.UpdateQueue) Projects {
 	return &PgProjectHelper{
 		db: db,
 		CRUDHelper: &CRUDHelper[*PgProject, *Project]{
 			db:             db,
+			updateQueue:    updateQueue,
 			MapModelToDB:   mapPgProject,
 			MapModelFromDB: mapProject,
 			GetEmptyStruct: func() *PgProject { return &PgProject{} },

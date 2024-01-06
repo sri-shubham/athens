@@ -52,7 +52,7 @@ func (h *GenericCrudHelper[Model]) Create(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	id, err := h.db.Create(reqBody)
+	id, err := h.db.Create(r.Context(), reqBody)
 	if err != nil {
 		http.Error(w, "Failed to parse JSON request body", http.StatusBadRequest)
 		return
@@ -75,7 +75,7 @@ func (h *GenericCrudHelper[Model]) Delete(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	err = h.db.Delete(id)
+	err = h.db.Delete(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 
@@ -99,7 +99,7 @@ func (h *GenericCrudHelper[Model]) Read(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	model, err := h.db.Get(id)
+	model, err := h.db.Get(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -124,7 +124,7 @@ func (h *GenericCrudHelper[Model]) Update(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	id, err := h.db.Update(reqBody)
+	id, err := h.db.Update(r.Context(), reqBody)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

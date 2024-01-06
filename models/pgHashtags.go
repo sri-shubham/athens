@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/go-pg/pg/v10"
+	"github.com/sri-shubham/athens/util"
 )
 
 type PgHashtag struct {
@@ -36,11 +37,12 @@ func (*PgHashtagHelper) GetNewEmptyStruct() *Hashtag {
 	return &Hashtag{}
 }
 
-func NewPgHashtagHelper(db *pg.DB) Hashtags {
+func NewPgHashtagHelper(db *pg.DB, updateQueue util.UpdateQueue) Hashtags {
 	return &PgHashtagHelper{
 		db: db,
 		CRUDHelper: &CRUDHelper[*PgHashtag, *Hashtag]{
 			db:             db,
+			updateQueue:    updateQueue,
 			MapModelToDB:   mapPgHashtag,
 			MapModelFromDB: mapHashtag,
 			GetEmptyStruct: func() *PgHashtag { return &PgHashtag{} },

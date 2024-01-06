@@ -1,5 +1,7 @@
 package models
 
+import "context"
+
 type UserProject struct {
 	ID        int64 `json:"id"`
 	ProjectID int64 `json:"project_id"`
@@ -15,4 +17,5 @@ func (u *UserProject) GetID() int64 {
 
 type UserProjects interface {
 	CRUD[*UserProject]
+	GetByProjectID(ctx context.Context, id int64) ([]*UserProject, error)
 }
